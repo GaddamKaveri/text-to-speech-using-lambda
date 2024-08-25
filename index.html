@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech</title>
+</head>
+<body>
+    <h1>Text to Speech</h1>
+    <form id="text-form">
+        <label for="text">Enter text:</label>
+        <input type="text" id="text" name="text" required>
+        <button type="submit">Convert to Speech</button>
+    </form>
+    <audio id="audio" controls></audio>
+    
+    <script>
+        document.getElementById('text-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const text = document.getElementById('text').value;
+            const response = await fetch(' https://664ih9h7s4.execute-api.us-east-1.amazonaws.com/dev/synthesize?text=' + encodeURIComponent(text));
+            const data = await response.json();
+            
+            const audioElement = document.getElementById('audio');
+            audioElement.src = data.audio_url;
+            audioElement.play();
+        });
+    </script>
+</body>
+</html>
