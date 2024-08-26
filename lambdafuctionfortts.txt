@@ -1,0 +1,49 @@
+role : use :lambda
+AmazonPollyFullAccess
+AmazonS3FullAccess
+AWSLambdaBasicExecutionRole
+
+import json
+import boto3
+import uuid
+
+# Initialize Polly and S3 clients
+polly_client = boto3.client('polly')
+s3_client = boto3.client('s3')
+
+def lambda_handler(event, context):
+    # Extract text from the event
+    text = event.get('text', 'Hello, world!')
+    
+    # Generate speech using Amazon Polly
+    response = polly_client.synthesize_speech(
+        Text=text,
+        OutputFormat='mp3',
+        VoiceId='Joanna'  # Change voice if needed
+    )
+    
+    # Get audio stream from response
+    audio_stream = response['AudioStream'].read()
+    
+    # Define S3 bucket and key
+    bucket_name = 'your-s3-bucket-name'
+    file_key = f'{uuid.uuid4()}.mp3'
+    
+    # Upload audio to S3
+    s3_client.put_object(
+        Bucket=bucket_name,
+        Key=file_key,
+        Body=audio_stream,
+        ContentType='audio/mpeg'
+    )
+    
+    # Construct the URL to access the audio file
+    audio_url = f'https://{bucket_name}.s3.amazonaws.com/{file_key}'
+    
+    # Return the URL of the audio file
+    return {
+        'statusCode': 200,
+        'body': json.dumps({
+            'audio_url': audio_url
+        })
+    }
